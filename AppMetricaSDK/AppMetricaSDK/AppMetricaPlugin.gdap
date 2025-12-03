@@ -1,0 +1,9 @@
+[config]
+name="AppMetricaSDK"
+binary_type="local"
+binary="AppMetricaSDK-release.aar"
+reload_on_save = true
+
+[dependencies]
+
+remote=["io.appmetrica.analytics:analytics:7.14.0"]
