@@ -22,4 +22,3 @@ dependencyResolutionManagement {
 rootProject.name = "AppMetricaSDK"
 include(":app")
 include(":AppMetricaSDK")
-include(":godot-lib")
