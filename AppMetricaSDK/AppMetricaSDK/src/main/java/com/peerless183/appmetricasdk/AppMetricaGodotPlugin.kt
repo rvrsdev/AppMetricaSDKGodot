@@ -19,14 +19,11 @@ class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
     fun init(apiKey: String) {
         if (godot == null) return
 
-        try {
-            val config = AppMetricaConfig.newConfigBuilder(apiKey).build()
-            AppMetrica.activate(activity as Context, config)
-            isInitialized = true
-            Log.d("AppMetrica", "AppMetrica initialized successfully")
-        } catch (e: Exception) {
-            Log.e("AppMetrica", "Failed to initialize: ${e.message}")
-        }
+        val config = AppMetricaConfig.newConfigBuilder(apiKey).build()
+        AppMetrica.activate(activity as Context, config)
+        activity?.application?.let { app ->
+            AppMetrica.enableActivityAutoTracking(app)}
+        isInitialized = true
     }
 
 
