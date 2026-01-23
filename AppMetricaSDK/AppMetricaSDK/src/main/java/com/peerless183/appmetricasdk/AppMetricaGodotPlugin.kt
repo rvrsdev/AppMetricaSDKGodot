@@ -2,7 +2,6 @@ package com.peerless183.appmetricasdk
 
 import io.appmetrica.analytics.AppMetrica
 import android.content.Context
-import android.util.Log
 import io.appmetrica.analytics.AppMetricaConfig
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
@@ -10,6 +9,7 @@ import org.godotengine.godot.plugin.UsedByGodot
 
 class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
     private var isInitialized = false
+    lateinit var config: AppMetricaConfig.Builder
 
     override fun getPluginName(): String {
         return "AppMetricaSDK"
@@ -19,24 +19,34 @@ class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
     fun init(apiKey: String) {
         if (godot == null) return
 
-        val config = AppMetricaConfig.newConfigBuilder(apiKey).build()
-        AppMetrica.activate(activity as Context, config)
-        activity?.application?.let { app ->
-            AppMetrica.enableActivityAutoTracking(app)}
+        config = AppMetricaConfig.newConfigBuilder(apiKey).withLocationTracking(false)
+
+        AppMetrica.activate(activity as Context, config.build())
         isInitialized = true
     }
 
-
     @UsedByGodot
-    fun reportEvent(name: String) {
-        AppMetrica.reportEvent(name)
+    fun reportAppOpen() {
+        if (!isInitialized) return
+
+        activity?.let {AppMetrica.reportAppOpen(it)}
     }
 
     @UsedByGodot
-    fun reportAppOpen(){
-        activity?.let {
-            AppMetrica.reportAppOpen(it)
-        }
+    fun reportEvent(name: String) {
+        if (!isInitialized) return
+
+        AppMetrica.reportEvent(name)
+        AppMetrica.sendEventsBuffer()
+    }
+
+    @UsedByGodot
+    fun reportError(name: String, message: String){
+        if(!isInitialized) return
+
+
+        val exception = Exception(message)
+        AppMetrica.reportError(name, message, exception)
     }
 
     @UsedByGodot
