@@ -1,17 +1,17 @@
 # AppMetricaSDKGodot
-AppMetrica SDK плагин для Godot 4.5 и AppMetrica 7.14.0
+AppMetrica SDK plugin for Godot 4.5 and AppMetrica 7.14.0
 
-Содержит базовые функции <ins>**init**</ins>(), <ins>**reportEvent**</ins>() и <ins>**reportAppOpen**</ins>(), а также доп. функцию для отправки события с параметрами <ins>**reportEventWithParams**</ins>().
+Contains basic functions <ins>**init**</ins>(), <ins>**reportEvent**</ins>(),<ins>**reportAppOpen**</ins>(),<ins>**reportError**</ins>(), and an additional one for sending events with parameters <ins>**reportEventWithParams**</ins>().
 
-При создании пользовался [этим туториалом](https://kovardin.ru/articles/godot/mytacker-and-app-metrica/#%D0%BF%D0%BB%D0%B0%D0%B3%D0%B8%D0%BD-appmetrica). В нём версия плагина до версии Godot 4.2 и старой версии метрики, но тут есть более гибкая настройка кастомных функций, так что думаю, кому то пригодится.
+I use file system for v1 plugins **android/plugins** and **gdap file**. If you use [file system for v2 Godot plugins](https://docs.godotengine.org/en/4.4/tutorials/platform/android/android_plugin.html#packaging-a-v2-android-plugin), metrics dependencies will not be able to load into the apk (probably yandex fault).
 
-Используется файловая система для v1 плагинов **android/plugins** и **gdap файл**. Если использовать [файловую систему для v2 Godot плагинов](https://docs.godotengine.org/en/4.4/tutorials/platform/android/android_plugin.html#packaging-a-v2-android-plugin), то зависимости метрики не смогут подгрузиться в apk (долго пытался понять почему, но так и не понял).
+Important to note that the name of gdap file must match the name of the plugin returned by the <ins>**getPluginName**</ins>() function.
 
-Из важного должен отметить, название gdap файла должно соответствовать имени плагина, возвращаемого функцией <ins>**getPluginName**</ins>().
+To configure the project, I recommend using [this documentation page](https://docs.godotengine.org/en/stable/tutorials/xr/deploying_to_android.html#deploying-to-android).
 
-Для настройки проекта советую пользоваться [этой страницой с документации](https://docs.godotengine.org/en/stable/tutorials/xr/deploying_to_android.html#deploying-to-android).
+Also there's [tutorial with more deeply set up of the plugin](https://kovardin.ru/articles/godot/mytacker-and-app-metrica/#%D0%BF%D0%BB%D0%B0%D0%B3%D0%B8%D0%BD-appmetrica), but it's only in russian.
 
-Также прикрепляю пример базовой настройки инициализации:
+Example of basic initialization settings:
 
 <pre>var metrica: Object
 func _ready():
@@ -24,11 +24,13 @@ func _ready():
 		metrica.reportEventWithParams("TestEvent", 1, 2, 3)
 		print("AppMetrica is on line")
 	else:
+		metrica.reportError("Initializing error", "AppMetrica isnt online")
 		printerr("AppMetrica isnt online")</pre>
 
-## Предпросмотр самого скрипта:
+## Preview of the script:
 <pre>class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
     private var isInitialized = false
+    lateinit var config: AppMetricaConfig.Builder
 
     override fun getPluginName(): String {
         return "AppMetricaSDK"
@@ -38,27 +40,33 @@ func _ready():
     fun init(apiKey: String) {
         if (godot == null) return
 
-        try {
-            val config = AppMetricaConfig.newConfigBuilder(apiKey).build()
-            AppMetrica.activate(activity as Context, config)
-            isInitialized = true
-            Log.d("AppMetrica", "AppMetrica initialized successfully")
-        } catch (e: Exception) {
-            Log.e("AppMetrica", "Failed to initialize: ${e.message}")
-        }
+        config = AppMetricaConfig.newConfigBuilder(apiKey).withLocationTracking(false)
+
+        AppMetrica.activate(activity as Context, config.build())
+        isInitialized = true
     }
 
+    @UsedByGodot
+    fun reportAppOpen() {
+        if (!isInitialized) return
+
+        activity?.let {AppMetrica.reportAppOpen(it)}
+    }
 
     @UsedByGodot
     fun reportEvent(name: String) {
+        if (!isInitialized) return
+
         AppMetrica.reportEvent(name)
+        AppMetrica.sendEventsBuffer()
     }
 
     @UsedByGodot
-    fun reportAppOpen(){
-        activity?.let {
-            AppMetrica.reportAppOpen(it)
-        }
+    fun reportError(name: String, message: String){
+        if(!isInitialized) return
+	
+        val exception = Exception(message)
+        AppMetrica.reportError(name, message, exception)
     }
 
     @UsedByGodot
@@ -71,6 +79,6 @@ func _ready():
             "par3" to par3
         )
         AppMetrica.reportEvent(name, params)
-//      AppMetrica.sendEventsBuffer() - Опционально
+//      AppMetrica.sendEventsBuffer() - Optional
     }
 }</pre>
