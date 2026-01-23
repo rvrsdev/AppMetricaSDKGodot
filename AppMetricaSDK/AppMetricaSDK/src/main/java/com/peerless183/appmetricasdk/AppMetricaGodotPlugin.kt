@@ -59,6 +59,6 @@ class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
             "par3" to par3
         )
         AppMetrica.reportEvent(name, params)
-//      AppMetrica.sendEventsBuffer() - Опционально
+//      AppMetrica.sendEventsBuffer() - Optional
     }
 }
