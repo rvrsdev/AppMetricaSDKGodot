@@ -7,6 +7,7 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
 
+
 class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
     private var isInitialized = false
     lateinit var config: AppMetricaConfig.Builder
@@ -17,11 +18,15 @@ class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun init(apiKey: String) {
+        val currentActivity = activity ?: return
         if (godot == null) return
 
-        config = AppMetricaConfig.newConfigBuilder(apiKey).withLocationTracking(false)
+        config = AppMetricaConfig.newConfigBuilder(apiKey).withSessionsAutoTrackingEnabled(true)
+            .withLocationTracking(false)
 
-        AppMetrica.activate(activity as Context, config.build())
+        AppMetrica.activate(currentActivity.applicationContext, config.build())
+        AppMetrica.setAdvIdentifiersTracking(true)
+        AppMetrica.resumeSession(currentActivity)
         isInitialized = true
     }
 
@@ -37,12 +42,11 @@ class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
         if (!isInitialized) return
 
         AppMetrica.reportEvent(name)
-        AppMetrica.sendEventsBuffer()
     }
 
     @UsedByGodot
-    fun reportError(name: String, message: String){
-        if(!isInitialized) return
+    fun reportError(name: String, message: String) {
+        if (!isInitialized) return
 
 
         val exception = Exception(message)
@@ -50,8 +54,8 @@ class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun reportEventWithParams(name: String, par1: Any, par2: Any, par3: Any){
-        if(!isInitialized) return
+    fun reportEventWithParams(name: String, par1: Any, par2: Any, par3: Any) {
+        if (!isInitialized) return
 
         val params = mapOf<String, Any>(
             "par1" to par1,
@@ -59,6 +63,5 @@ class AppMetricaGodotPlugin(godot: Godot?) : GodotPlugin(godot) {
             "par3" to par3
         )
         AppMetrica.reportEvent(name, params)
-//      AppMetrica.sendEventsBuffer() - Optional
     }
 }
