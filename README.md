@@ -7,7 +7,7 @@ I use file system for v1 plugins **android/plugins** and **gdap file**. If you u
 
 Important to note that the name of gdap file must match the name of the plugin returned by the <ins>**getPluginName**</ins>() function.
 
-To configure the project, I recommend using [this documentation page](https://docs.godotengine.org/en/stable/tutorials/xr/deploying_to_android.html#deploying-to-android).
+To configure your godot project, I recommend using [this documentation page](https://docs.godotengine.org/en/stable/tutorials/xr/deploying_to_android.html#deploying-to-android).
 
 Also there's [tutorial with more deeply set up of the plugin](https://kovardin.ru/articles/godot/mytacker-and-app-metrica/#%D0%BF%D0%BB%D0%B0%D0%B3%D0%B8%D0%BD-appmetrica), but it's for Godot 4.2 and only in russian.
 
