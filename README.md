@@ -1,5 +1,5 @@
 # AppMetricaSDKGodot
-AppMetrica SDK plugin for Godot 4.5 and AppMetrica 7.14.0
+AppMetrica SDK plugin for Godot 4.6.3 and AppMetrica 8.2.0
 
 Contains basic functions <ins>**init**</ins>(), <ins>**reportEvent**</ins>(), <ins>**reportAppOpen**</ins>(), <ins>**reportError**</ins>(), and an additional one for sending events with parameters <ins>**reportEventWithParams**</ins>().
 
